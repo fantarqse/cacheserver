@@ -15,7 +15,11 @@ func New(storage port.CacheStorage) *service {
 	}
 }
 
-func (s *service) Put(key string, page []byte) error {
+func (s *service) Put(key string, page model.Page) error {
+	if err := s.storage.Put(key, page); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -34,4 +38,8 @@ func (s *service) Delete(key string) error {
 
 func (s *service) Top() ([]string, error) {
 	return nil, nil
+}
+
+func (s *service) increaseHitRating(key string) (int, error) {
+	return 0, nil
 }
