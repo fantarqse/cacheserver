@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"os"
 
 	"github.com/fantarqse/cacheserver/internal/core/service"
 	"github.com/fantarqse/cacheserver/internal/httpserver"
@@ -17,6 +18,7 @@ func main() {
 	server := httpserver.New(service)
 
 	if err := server.Serve(); err != nil {
-		log.Fatalln(err)
+		log.Println(err)
+		os.Exit(1)
 	}
 }
