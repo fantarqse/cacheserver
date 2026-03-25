@@ -13,12 +13,12 @@ type mockStorage struct {
 	data map[string]model.Page
 }
 
-func (m *mockStorage) Put(ctx context.Context, key string, page model.Page) error {
+func (m *mockStorage) Put(_ context.Context, key string, page model.Page) error {
 	m.data[key] = page
 	return nil
 }
 
-func (m *mockStorage) Get(ctx context.Context, key string) (model.Page, error) {
+func (m *mockStorage) Get(_ context.Context, key string) (model.Page, error) {
 	p, ok := m.data[key]
 	if !ok {
 		return model.Page{}, ErrNotFound
@@ -27,11 +27,12 @@ func (m *mockStorage) Get(ctx context.Context, key string) (model.Page, error) {
 	return p, nil
 }
 
-func (m *mockStorage) Delete(ctx context.Context, key string) error {
+func (m *mockStorage) Delete(_ context.Context, key string) error {
+	delete(m.data, key)
 	return nil
 }
 
-func (m *mockStorage) Top(ctx context.Context) ([]string, error) {
+func (m *mockStorage) Top(_ context.Context) ([]string, error) {
 	return nil, nil
 }
 
@@ -61,6 +62,14 @@ func TestGet(t *testing.T) {
 			expectedRating: 2,
 			expectedErr:    nil,
 		},
+		{
+			name:           "2. Failed: a key doesn't exist in the storage",
+			state:          make(map[string]model.Page),
+			key:            "key1",
+			expectedData:   nil,
+			expectedRating: 0,
+			expectedErr:    ErrNotFound,
+		},
 	}
 
 	for _, tt := range tests {
@@ -74,13 +83,13 @@ func TestGet(t *testing.T) {
 
 			// Errors
 			if tt.expectedErr == nil && err != nil {
-				t.Fatalf("expected no error, but got: %v", err)
+				t.Fatalf("expected no error, but got: %q", err)
 			}
-			if tt.expectedErr != nil && err != nil {
-				t.Fatalf("expected %v, but got nil", tt.expectedErr)
+			if tt.expectedErr != nil && err == nil {
+				t.Fatalf("expected %q, but got nil", tt.expectedErr)
 			}
 			if !errors.Is(err, tt.expectedErr) {
-				t.Fatalf("expected %v, but got %v", tt.expectedErr, err)
+				t.Fatalf("expected %q, but got %q", tt.expectedErr, err)
 			}
 
 			// Data
