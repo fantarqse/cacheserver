@@ -1,6 +1,7 @@
 package httpserver
 
 import (
+	"context"
 	"log"
 	"net/http"
 
@@ -16,7 +17,7 @@ func New(service port.CacheService) *HTTPServer {
 	return &HTTPServer{mux: http.NewServeMux(), service: service}
 }
 
-func (s *HTTPServer) Serve() error {
+func (s *HTTPServer) Serve(_ context.Context) error {
 	log.Println("serving...")
 
 	s.mux.HandleFunc("POST /put", s.Put)

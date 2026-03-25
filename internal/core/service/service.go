@@ -1,6 +1,8 @@
 package service
 
 import (
+	"context"
+
 	"github.com/fantarqse/cacheserver/internal/core/model"
 	"github.com/fantarqse/cacheserver/internal/core/port"
 )
@@ -15,16 +17,16 @@ func New(storage port.CacheStorage) *service {
 	}
 }
 
-func (s *service) Put(key string, page model.Page) error {
-	if err := s.storage.Put(key, page); err != nil {
+func (s *service) Put(ctx context.Context, key string, page model.Page) error {
+	if err := s.storage.Put(ctx, key, page); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (s *service) Get(key string) (model.Page, error) {
-	page, err := s.storage.Get(key)
+func (s *service) Get(ctx context.Context, key string) (model.Page, error) {
+	page, err := s.storage.Get(ctx, key)
 	if err != nil {
 		return model.Page{}, err
 	}
@@ -32,11 +34,11 @@ func (s *service) Get(key string) (model.Page, error) {
 	return page, nil
 }
 
-func (s *service) Delete(key string) error {
-	return s.storage.Delete(key)
+func (s *service) Delete(ctx context.Context, key string) error {
+	return s.storage.Delete(ctx, key)
 }
 
-func (s *service) Top() ([]string, error) {
+func (s *service) Top(ctx context.Context) ([]string, error) {
 	return nil, nil
 }
 

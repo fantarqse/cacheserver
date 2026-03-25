@@ -1,6 +1,10 @@
 package storage
 
-import "github.com/fantarqse/cacheserver/internal/core/model"
+import (
+	"context"
+
+	"github.com/fantarqse/cacheserver/internal/core/model"
+)
 
 type storage struct {
 }
@@ -9,18 +13,18 @@ func New() *storage {
 	return &storage{}
 }
 
-func (s *storage) Put(key string, page model.Page) error {
+func (s *storage) Put(ctx context.Context, key string, page model.Page) error {
 	panic("unimplemented")
 }
 
-func (s *storage) Get(key string) (model.Page, error) {
+func (s *storage) Get(ctx context.Context, key string) (model.Page, error) {
 	panic("unimplemented")
 }
 
-func (s *storage) Delete(key string) error {
+func (s *storage) Delete(ctx context.Context, key string) error {
 	panic("unimplemented")
 }
 
-func (s *storage) Top() ([]string, error) {
+func (s *storage) Top(ctx context.Context) ([]string, error) {
 	panic("unimplemented")
 }

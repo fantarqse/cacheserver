@@ -1,19 +1,23 @@
 package port
 
-import "github.com/fantarqse/cacheserver/internal/core/model"
+import (
+	"context"
+
+	"github.com/fantarqse/cacheserver/internal/core/model"
+)
 
 // Port for the drivers
 type CacheService interface {
-	Put(key string, page model.Page) error
-	Get(key string) (model.Page, error)
-	Delete(key string) error
-	Top() ([]string, error)
+	Put(ctx context.Context, key string, page model.Page) error
+	Get(ctx context.Context, key string) (model.Page, error)
+	Delete(ctx context.Context, key string) error
+	Top(ctx context.Context) ([]string, error)
 }
 
 // Port for the driven
 type CacheStorage interface {
-	Put(key string, page model.Page) error
-	Get(key string) (model.Page, error)
-	Delete(key string) error
-	Top() ([]string, error)
+	Put(ctx context.Context, key string, page model.Page) error
+	Get(ctx context.Context, key string) (model.Page, error)
+	Delete(ctx context.Context, key string) error
+	Top(ctx context.Context) ([]string, error)
 }

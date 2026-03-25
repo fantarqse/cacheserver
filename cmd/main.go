@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 	"os"
 
@@ -17,7 +18,7 @@ func main() {
 	service := service.New(storage)
 	server := httpserver.New(service)
 
-	if err := server.Serve(); err != nil {
+	if err := server.Serve(context.Background()); err != nil {
 		log.Println(err)
 		os.Exit(1)
 	}
