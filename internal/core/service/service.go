@@ -61,14 +61,15 @@ func (s *service) Get(ctx context.Context, key string) (model.Page, error) {
 }
 
 func (s *service) Delete(ctx context.Context, key string) error {
-	return s.storage.Delete(ctx, key)
+	if err := s.storage.Delete(ctx, key); err != nil {
+		return fmt.Errorf("failed to delete data from the storage: %w", err)
+	}
+
+	return nil
 }
 
 func (s *service) Top(ctx context.Context) ([]string, error) {
 	// TODO: I think a sorting mechanism has to be implemented there.
+	// TODO: I am not sure what a type should be returned. []Page?
 	return nil, nil
-}
-
-func (s *service) increaseHitRating(key string) (int, error) {
-	return 0, nil
 }
