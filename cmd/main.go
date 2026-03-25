@@ -12,7 +12,10 @@ import (
 
 func main() {
 	// TODO: logger?
-	// TODO: config
+	// Do I want to use a standard slog or zap?
+
+	// TODO: config?
+	// I am considering using flags to configure the entire app.
 
 	storage := storage.New()
 	service := service.New(storage)
