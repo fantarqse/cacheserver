@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 
 	"github.com/fantarqse/cacheserver/internal/core/model"
 	"github.com/fantarqse/cacheserver/internal/core/port"
@@ -39,8 +38,6 @@ func (s *service) Put(ctx context.Context, key string, page model.Page) error {
 	// * If it doesn't exist, the hit rating just becomes 1.
 	page.HitRating++
 
-	log.Println("hit", page.HitRating)
-	log.Println("data", page)
 	if err := s.storage.Put(ctx, key, page); err != nil {
 		return fmt.Errorf("failed to put data to the storage: %w", err)
 	}
