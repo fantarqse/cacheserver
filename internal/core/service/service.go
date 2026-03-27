@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 
 	"github.com/fantarqse/cacheserver/internal/core/model"
 	"github.com/fantarqse/cacheserver/internal/core/port"
@@ -25,17 +26,21 @@ func New(storage port.CacheStorage) *service {
 
 func (s *service) Put(ctx context.Context, key string, page model.Page) error {
 	p, err := s.storage.Get(ctx, key)
-	if err != nil {
-		if !errors.Is(err, ErrNotFound) {
-			return fmt.Errorf("failed to get data from the storage: %w", err)
-		}
+	switch err {
+	case nil:
 		page = p
+	case ErrNotFound:
+	// Do nothing.
+	default:
+		return fmt.Errorf("failed to get data from the storage: %w", err)
 	}
 	// * If a page already exists in the storage,
 	//   it rebinds, and the hit rating increases.
 	// * If it doesn't exist, the hit rating just becomes 1.
 	page.HitRating++
 
+	log.Println("hit", page.HitRating)
+	log.Println("data", page)
 	if err := s.storage.Put(ctx, key, page); err != nil {
 		return fmt.Errorf("failed to put data to the storage: %w", err)
 	}
@@ -69,7 +74,12 @@ func (s *service) Delete(ctx context.Context, key string) error {
 }
 
 func (s *service) Top(ctx context.Context) ([]model.Page, error) {
+	pages, err := s.storage.Top(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch top pages from the storage: %w", err)
+	}
+
 	// TODO: I think a sorting mechanism has to be implemented there.
-	// TODO: I am not sure what a type should be returned. []Page?
-	return nil, nil
+
+	return pages, nil
 }
