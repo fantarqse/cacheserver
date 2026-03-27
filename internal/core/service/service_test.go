@@ -36,7 +36,92 @@ func (m *mockStorage) Top(_ context.Context) ([]model.Page, error) {
 	return nil, nil
 }
 
-// TODO: func TestPut(t *testing.T) {}
+func TestPut(t *testing.T) {
+	tests := []struct {
+		name           string
+		state          map[string]model.Page
+		key            string
+		data           model.Page
+		expectedData   []byte
+		expectedRating int
+		expectedErr    error
+		beforeErr      error
+	}{
+		{
+			name: "1. Successful: adding data to the empty storage",
+			state: func() map[string]model.Page {
+				m := make(map[string]model.Page)
+				return m
+			}(),
+			key:            "key1",
+			data:           model.Page{Data: []byte("data1")},
+			expectedData:   []byte("data1"),
+			expectedRating: 1,
+			expectedErr:    nil,
+			beforeErr:      ErrNotFound,
+		},
+		{
+			name: "2. Successful: updating data in the storage",
+			state: func() map[string]model.Page {
+				m := make(map[string]model.Page)
+				m["key1"] = model.Page{
+					Data:      []byte("data1"),
+					HitRating: 2,
+				}
+				return m
+			}(),
+			key:            "key1",
+			data:           model.Page{Data: []byte("data1")},
+			expectedData:   []byte("data1"),
+			expectedRating: 3,
+			expectedErr:    nil,
+			beforeErr:      nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var (
+				err error
+
+				ctx = context.Background()
+				m   = &mockStorage{data: tt.state}
+				svc = New(m)
+			)
+
+			// Before
+			_, err = m.Get(ctx, tt.key)
+			if !errors.Is(tt.beforeErr, err) {
+				t.Fatalf("before operation: expected %q, but got: %q", tt.beforeErr, err)
+			}
+
+			// During
+			err = svc.Put(ctx, tt.key, tt.data)
+			if tt.expectedErr == nil && err != nil {
+				t.Fatalf("expected no error, but got: %q", err)
+			}
+			if tt.expectedErr != nil && err == nil {
+				t.Fatalf("expected %q, but got nil", tt.expectedErr)
+			}
+			if !errors.Is(err, tt.expectedErr) {
+				t.Fatalf("expected %q, but got %q", tt.expectedErr, err)
+			}
+
+			// After
+			after, err := m.Get(ctx, tt.key)
+			if err != nil {
+				t.Fatalf("after: expected no error, but got %q", err)
+			}
+
+			if tt.expectedRating != after.HitRating {
+				t.Fatalf("after: expected rating %q, but got %q", tt.expectedRating, after.HitRating)
+			}
+			if !slices.Equal(tt.expectedData, after.Data) {
+				t.Fatalf("after: expected data %q, but got %q", tt.expectedData, after.Data)
+			}
+		})
+	}
+}
 
 func TestGet(t *testing.T) {
 	tests := []struct {
