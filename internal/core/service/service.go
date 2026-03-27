@@ -70,6 +70,7 @@ func (s *service) Delete(ctx context.Context, key string) error {
 	return nil
 }
 
+// TODO: []Page is incorrect type, Top must return keys, not pages.
 func (s *service) Top(ctx context.Context) ([]model.Page, error) {
 	pages, err := s.storage.Top(ctx)
 	if err != nil {
