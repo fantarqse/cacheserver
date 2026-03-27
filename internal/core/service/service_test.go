@@ -123,13 +123,13 @@ func TestGet(t *testing.T) {
 	}
 }
 
-// TODO: this test approach is bad: the state should be checked after and before the operation.
 func TestDelete(t *testing.T) {
 	tests := []struct {
 		name        string
 		state       map[string]model.Page
 		key         string
 		expectedErr error
+		beforeErr   error
 	}{
 		{
 			name: "1. Successful: a key is in the storage",
@@ -140,24 +140,49 @@ func TestDelete(t *testing.T) {
 			}(),
 			key:         "key1",
 			expectedErr: nil,
+			beforeErr:   nil,
+		},
+		{
+			name: "2. Successful: a key is not in the storage",
+			state: func() map[string]model.Page {
+				m := make(map[string]model.Page)
+				return m
+			}(),
+			key:         "key1",
+			expectedErr: nil,
+			beforeErr:   ErrNotFound,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			svc := New(&mockStorage{
-				data: tt.state,
-			})
+			var (
+				err error
 
-			err := svc.Delete(context.Background(), tt.key)
-			if tt.expectedErr == nil && err != nil {
-				t.Fatalf("expected no error, but got: %q", err)
+				ctx = context.Background()
+				m   = &mockStorage{data: tt.state}
+				svc = New(m)
+			)
+
+			// Before
+			_, err = m.Get(ctx, tt.key)
+			if !errors.Is(tt.beforeErr, err) {
+				t.Fatalf("before operation: expected %q, but got: %q", tt.beforeErr, err)
 			}
+
+			// During
+			err = svc.Delete(ctx, tt.key)
 			if tt.expectedErr != nil && err == nil {
-				t.Fatalf("expected %q, but got nil", tt.expectedErr)
+				t.Fatalf("during: expected %q, but got nil", tt.expectedErr)
 			}
 			if !errors.Is(err, tt.expectedErr) {
-				t.Fatalf("expected %q, but got %q", tt.expectedErr, err)
+				t.Fatalf("during: expected %q, but got %q", tt.expectedErr, err)
+			}
+
+			// After
+			_, err = m.Get(ctx, tt.key)
+			if !errors.Is(err, ErrNotFound) {
+				t.Fatalf("after: error must be %q, but got %q", ErrNotFound, err)
 			}
 		})
 	}
