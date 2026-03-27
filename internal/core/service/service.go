@@ -68,7 +68,7 @@ func (s *service) Delete(ctx context.Context, key string) error {
 	return nil
 }
 
-func (s *service) Top(ctx context.Context) ([]string, error) {
+func (s *service) Top(ctx context.Context) ([]model.Page, error) {
 	// TODO: I think a sorting mechanism has to be implemented there.
 	// TODO: I am not sure what a type should be returned. []Page?
 	return nil, nil

@@ -25,6 +25,6 @@ func (s *storage) Delete(ctx context.Context, key string) error {
 	panic("unimplemented")
 }
 
-func (s *storage) Top(ctx context.Context) ([]string, error) {
+func (s *storage) Top(ctx context.Context) ([]model.Page, error) {
 	panic("unimplemented")
 }

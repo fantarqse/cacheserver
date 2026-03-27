@@ -32,9 +32,11 @@ func (m *mockStorage) Delete(_ context.Context, key string) error {
 	return nil
 }
 
-func (m *mockStorage) Top(_ context.Context) ([]string, error) {
+func (m *mockStorage) Top(_ context.Context) ([]model.Page, error) {
 	return nil, nil
 }
+
+// TODO: func TestPut(t *testing.T) {}
 
 func TestGet(t *testing.T) {
 	tests := []struct {
