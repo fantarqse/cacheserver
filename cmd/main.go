@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"os"
+	"os/signal"
 
 	"github.com/fantarqse/cacheserver/internal/core/service"
 	"github.com/fantarqse/cacheserver/internal/httpserver"
