@@ -56,6 +56,10 @@ func TestGet(t *testing.T) {
 					Data:      []byte("data1"),
 					HitRating: 1,
 				}
+				m["key2"] = model.Page{
+					Data:      []byte("data2"),
+					HitRating: 10,
+				}
 
 				return m
 			}(),
@@ -76,12 +80,13 @@ func TestGet(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
 			m := &mockStorage{
 				data: tt.state,
 			}
 			svc := New(m)
 
-			got, err := svc.Get(context.Background(), tt.key)
+			got, err := svc.Get(ctx, tt.key)
 
 			// Errors
 			if tt.expectedErr == nil && err != nil {
@@ -100,6 +105,59 @@ func TestGet(t *testing.T) {
 			}
 			if tt.expectedRating != got.HitRating {
 				t.Fatalf("expected %v, but got %v", tt.expectedRating, got.HitRating)
+			}
+
+			// Checking if Get method updates value in the storage.
+			synced, err := m.Get(ctx, tt.key)
+			if tt.expectedErr == nil && err != nil {
+				t.Fatalf("expected no err after sync, but got: %v", err)
+			}
+
+			if !slices.Equal(synced.Data, got.Data) {
+				t.Fatal("data must be equal after sync")
+			}
+			if synced.HitRating != got.HitRating {
+				t.Fatal("hit rating must be equal after sync")
+			}
+		})
+	}
+}
+
+// TODO: this test approach is bad: the state should be checked after and before the operation.
+func TestDelete(t *testing.T) {
+	tests := []struct {
+		name        string
+		state       map[string]model.Page
+		key         string
+		expectedErr error
+	}{
+		{
+			name: "1. Successful: a key is in the storage",
+			state: func() map[string]model.Page {
+				m := make(map[string]model.Page)
+				m["key1"] = model.Page{}
+				return m
+			}(),
+			key:         "key1",
+			expectedErr: nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			svc := New(&mockStorage{
+				data: tt.state,
+			})
+
+			err := svc.Delete(context.Background(), tt.key)
+			if tt.expectedErr == nil && err != nil {
+				t.Fatalf("expected no error, but got: %q", err)
+			}
+			if tt.expectedErr != nil && err == nil {
+				t.Fatalf("expected %q, but got nil", tt.expectedErr)
+			}
+			if !errors.Is(err, tt.expectedErr) {
+				t.Fatalf("expected %q, but got %q", tt.expectedErr, err)
 			}
 		})
 	}
