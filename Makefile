@@ -7,4 +7,7 @@ build:
 test:
 	go test ./...
 
-.PHONY: run build test
+test-race:
+	go test -race ./...
+
+.PHONY: run build test test-race
