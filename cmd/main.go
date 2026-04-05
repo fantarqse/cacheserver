@@ -8,6 +8,8 @@ import (
 	"os"
 	"os/signal"
 
+	"github.com/redis/go-redis/v9"
+
 	"github.com/fantarqse/cacheserver/internal/core/service"
 	"github.com/fantarqse/cacheserver/internal/httpserver"
 	"github.com/fantarqse/cacheserver/internal/storage"
@@ -33,6 +35,7 @@ func run(ctx context.Context) error {
 		- http server
 			- port
 		- storage
+			- address, password, etc.
 			- max count of items
 			- size of one item in bytes
 			- size of all items in bytes
@@ -41,9 +44,14 @@ func run(ctx context.Context) error {
 	*/
 
 	port := flag.Int("port", 8080, "a port of an http server")
+	redisAddr := flag.String("redis-addr", "locahlhost", "an address of redis")
+	redisPort := flag.Int("redis-port", 6379, "an address of redis")
 	flag.Parse()
 
-	storage := storage.New()
+	rdb := redis.NewClient(&redis.Options{
+		Addr: fmt.Sprintf("%s:%d", *redisAddr, *redisPort),
+	})
+	storage := storage.New(rdb)
 	service := service.New(storage)
 	server := httpserver.New(service)
 

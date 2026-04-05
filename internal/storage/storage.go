@@ -3,13 +3,15 @@ package storage
 import (
 	"context"
 
+	"github.com/redis/go-redis/v9"
+
 	"github.com/fantarqse/cacheserver/internal/core/model"
 )
 
 type storage struct {
 }
 
-func New() *storage {
+func New(rdb *redis.Client) *storage {
 	return &storage{}
 }
 
