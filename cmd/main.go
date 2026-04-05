@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"log"
 	"os"
 	"os/signal"
@@ -38,12 +39,15 @@ func run(ctx context.Context) error {
 		- logger
 	*/
 
+	port := flag.Int("port", 8080, "a port of an http server")
+	flag.Parse()
+
 	storage := storage.New()
 	service := service.New(storage)
 	server := httpserver.New(service)
 
 	go func() {
-		if err := server.Serve(context.Background()); err != nil {
+		if err := server.Serve(ctx, *port); err != nil {
 			log.Println(err)
 		}
 	}()
