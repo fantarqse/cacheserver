@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
 	"log"
 	"os"
 	"os/signal"
@@ -46,13 +47,20 @@ func run(ctx context.Context) error {
 	service := service.New(storage)
 	server := httpserver.New(service)
 
+	errCh := make(chan error, 1)
 	go func() {
 		if err := server.Serve(ctx, *port); err != nil {
-			log.Println(err)
+			errCh <- err
 		}
 	}()
 
-	<-ctx.Done()
+	select {
+	case <-ctx.Done():
+		// process further
+		log.Println("shutting down")
+	case err := <-errCh:
+		return fmt.Errorf("failed to start the server: %w", err)
+	}
 
 	return nil
 }
