@@ -34,12 +34,14 @@ func run(ctx context.Context) error {
 	rdb := redis.NewClient(&redis.Options{
 		Addr: fmt.Sprintf("%s:%d", fs.Cache.Address, fs.Cache.Port),
 	})
+	defer rdb.Close()
+
 	storage, err := storage.New(ctx, rdb)
 	if err != nil {
 		return fmt.Errorf("failed to create the storage: %w", err)
 	}
 
-	service := service.New(storage)
+	service := service.New(fs.Cache, storage)
 	server := httpserver.New(service)
 
 	errCh := make(chan error, 1)
