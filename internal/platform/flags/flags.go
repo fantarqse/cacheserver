@@ -26,19 +26,6 @@ type Flags struct {
 	Logger     Logger
 }
 
-// TODO: config?
-// I am considering using flags to configure the entire app.
-/*
-	- http server
-		- port
-	- storage
-		- address, password, etc.
-		- max count of items
-		- size of one item in bytes
-		- size of all items in bytes
-		- TTL
-	- logger
-*/
 func Parse() Flags {
 	var fs Flags
 
@@ -48,6 +35,10 @@ func Parse() Flags {
 	// Cache
 	flag.StringVar(&fs.Cache.Address, "cache-address", "localhost", "an address of redis")
 	flag.IntVar(&fs.Cache.Port, "cache-port", 6379, "a port of redis")
+	flag.IntVar(&fs.Cache.MaxCountOfItems, "cache-count-of-items", 100, "a maximum number of items in the storage")
+	flag.IntVar(&fs.Cache.MaxItemSize, "cache-item-size", 100, "a maximum size of an item in the storage (in bytes)")
+	flag.IntVar(&fs.Cache.GlobalCacheSize, "cache-global-size", 10000, "a maximum size of all items in the storage (in bytes)")
+	flag.DurationVar(&fs.Cache.TTL, "cache-ttl", 1*time.Hour, "TTL")
 
 	flag.Parse()
 	return fs
