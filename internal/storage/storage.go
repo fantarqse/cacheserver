@@ -9,6 +9,7 @@ import (
 	"github.com/redis/go-redis/v9"
 
 	"github.com/fantarqse/cacheserver/internal/core/model"
+	"github.com/fantarqse/cacheserver/internal/core/service"
 )
 
 // It must be configurable value, not a constant.
@@ -45,7 +46,12 @@ func (s *storage) Get(ctx context.Context, key string) (model.Page, error) {
 	)
 
 	val, err := s.rdb.Get(ctx, fullKey).Result()
-	if err != nil {
+	switch err {
+	case nil:
+		// Do nothing.
+	case redis.Nil:
+		return model.Page{}, service.ErrNotFound
+	default:
 		return model.Page{}, fmt.Errorf("failed to get value %s from the cache: %w", fullKey, err)
 	}
 
