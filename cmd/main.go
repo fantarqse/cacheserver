@@ -32,7 +32,7 @@ func run(ctx context.Context) error {
 	fs := flags.Parse()
 
 	rdb := redis.NewClient(&redis.Options{
-		Addr: fmt.Sprintf("%s:%d", fs.Cache.Address, fs.Cache.Port),
+		Addr: fmt.Sprintf("%s:%d", fs.Redis.Address, fs.Redis.Port),
 	})
 	defer rdb.Close()
 
