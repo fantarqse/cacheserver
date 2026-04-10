@@ -5,15 +5,17 @@ import (
 	"errors"
 	"slices"
 	"testing"
+	"time"
 
 	"github.com/fantarqse/cacheserver/internal/core/model"
+	"github.com/fantarqse/cacheserver/internal/platform/flags"
 )
 
 type mockStorage struct {
 	data map[string]model.Page
 }
 
-func (m *mockStorage) Put(_ context.Context, key string, page model.Page) error {
+func (m *mockStorage) Put(_ context.Context, key string, page model.Page, ttl time.Duration) error {
 	m.data[key] = page
 	return nil
 }
@@ -83,10 +85,11 @@ func TestPut(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			var (
 				err error
+				cfg flags.Cache
 
 				ctx = context.Background()
 				m   = &mockStorage{data: tt.state}
-				svc = New(m)
+				svc = New(cfg, m)
 			)
 
 			// Before
@@ -165,11 +168,14 @@ func TestGet(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ctx := context.Background()
-			m := &mockStorage{
-				data: tt.state,
-			}
-			svc := New(m)
+			var (
+				err error
+				cfg flags.Cache
+
+				ctx = context.Background()
+				m   = &mockStorage{data: tt.state}
+				svc = New(cfg, m)
+			)
 
 			got, err := svc.Get(ctx, tt.key)
 
@@ -243,10 +249,11 @@ func TestDelete(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			var (
 				err error
+				cfg flags.Cache
 
 				ctx = context.Background()
 				m   = &mockStorage{data: tt.state}
-				svc = New(m)
+				svc = New(cfg, m)
 			)
 
 			// Before

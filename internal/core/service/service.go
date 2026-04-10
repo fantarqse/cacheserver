@@ -4,9 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sync/atomic"
+	"time"
 
 	"github.com/fantarqse/cacheserver/internal/core/model"
 	"github.com/fantarqse/cacheserver/internal/core/port"
+	"github.com/fantarqse/cacheserver/internal/platform/flags"
 )
 
 var (
@@ -14,12 +17,18 @@ var (
 )
 
 type service struct {
-	storage port.CacheStorage
+	storage   port.CacheStorage
+	cacheSize atomic.Uint32
+	itemSize  uint
+	ttl       time.Duration
 }
 
-func New(storage port.CacheStorage) *service {
+func New(cfg flags.Cache, storage port.CacheStorage) *service {
 	return &service{
 		storage: storage,
+		// cacheSize: atomic.Uint32{v: uint32(cfg.GlobalCacheSize)},
+		itemSize: uint(cfg.MaxItemSize),
+		ttl:      cfg.TTL,
 	}
 }
 
@@ -38,7 +47,7 @@ func (s *service) Put(ctx context.Context, key string, page model.Page) error {
 	// * If it doesn't exist, the hit rating just becomes 1.
 	page.HitRating++
 
-	if err := s.storage.Put(ctx, key, page); err != nil {
+	if err := s.storage.Put(ctx, key, page, s.ttl); err != nil {
 		return fmt.Errorf("failed to put data to the storage: %w", err)
 	}
 
@@ -55,7 +64,7 @@ func (s *service) Get(ctx context.Context, key string) (model.Page, error) {
 
 	// TODO: could I sync data concurrently there?
 	// I don't want to block the program execution just for updating.
-	if err := s.storage.Put(ctx, key, page); err != nil {
+	if err := s.storage.Put(ctx, key, page, s.ttl); err != nil {
 		return model.Page{}, err
 	}
 
@@ -78,6 +87,15 @@ func (s *service) Top(ctx context.Context) ([]model.Page, error) {
 	}
 
 	// TODO: I think a sorting mechanism has to be implemented there.
+	// Storage layer doesn't know about hit rating, it just stores data.
+	// Top gets all values from the cache, sorts it and returns [1, 100].
 
 	return pages, nil
+}
+
+func (s *service) isWithinLimit(size uint) bool {
+	if size > s.itemSize {
+		return false
+	}
+	return true
 }

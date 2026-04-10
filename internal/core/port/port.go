@@ -2,6 +2,7 @@ package port
 
 import (
 	"context"
+	"time"
 
 	"github.com/fantarqse/cacheserver/internal/core/model"
 )
@@ -16,7 +17,7 @@ type CacheService interface {
 
 // Port for the driven
 type CacheStorage interface {
-	Put(ctx context.Context, key string, page model.Page) error
+	Put(ctx context.Context, key string, page model.Page, ttl time.Duration) error
 	Get(ctx context.Context, key string) (model.Page, error)
 	Delete(ctx context.Context, key string) error
 	Top(ctx context.Context) ([]model.Page, error)
