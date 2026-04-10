@@ -28,3 +28,5 @@ func (s *HTTPServer) Serve(_ context.Context, port int) error {
 
 	return http.ListenAndServe(fmt.Sprintf(":%d", port), s.mux)
 }
+
+// TODO: logging middleware
